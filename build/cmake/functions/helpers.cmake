@@ -1,35 +1,29 @@
-# Find all files with defined extentions in defined directory and put them to OUT_FILES variable.
+# Find all files with defined extentions in defined directory and put them to FILES variable.
 # Parameters:
-#     IN_LOCATION - (in) directory where recursive search will be performed
-#     IN_EXTENTIONS - (in) file extentions what should be found
-#     OUT_FILES - (out) list of detected files
+#     LOCATION - (in) directory where recursive search will be performed
+#     EXTENTIONS - (in) (list) file extentions what should be found
+#     FILES - (out) list of detected files
 # Example:
-#     find_files_by_ext( PROJECT_SOURCE_FILES ${PROJECT_SOURCE_DIR} "${CPP_EXTENTIONS}" )
+#     find_files_by_ext( RECURSE FILES PROJECT_SOURCE_FILES LOCATION ${PROJECT_SOURCE_DIR} EXTENTIONS ${CPP_EXTENTIONS} )
 #     msg_dbg( "PROJECT_SOURCE_FILES = " ${PROJECT_SOURCE_FILES} )
-function( find_files_by_ext OUT_FILES IN_LOCATION IN_EXTENTIONS )
+function( find_files_by_ext )
+   set( OPTIONS RECURSE )
+   set( ONE_VALUE_ARGS FILES LOCATION )
+   set( MULTI_VALUE_ARGS EXTENTIONS )
+   cmake_parse_arguments( ARG "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN} )
+
+
+
+
    set( LOCAL_FILES "" )
-   foreach( EXTENTION ${IN_EXTENTIONS} )
-      file( GLOB_RECURSE _FILES_ ${IN_LOCATION}/*.${EXTENTION} )
+   foreach( EXTENTION ${ARG_EXTENTIONS} )
+      if( ARG_RECURSE )
+         file( GLOB_RECURSE _FILES_ ${ARG_LOCATION}/*.${EXTENTION} )
+      else( )
+         file( GLOB _FILES_ ${ARG_LOCATION}/*.${EXTENTION} )
+      endif( )
+
       list( APPEND LOCAL_FILES ${_FILES_} )
    endforeach( )
-   set( ${OUT_FILES} ${LOCAL_FILES} PARENT_SCOPE )
-endfunction( )
-
-# Find all files with defined extentions in defined directory, add them to
-# provided list of files and put result to OUT_FILES variable.
-# Parameters:
-#     IN_LOCATION - (in) directory where recursive search will be performed
-#     IN_EXTENTIONS - (in) file extentions what should be found
-#     IN_FILES - (in) files to be extended
-#     OUT_FILES - (out) list of detected files and provided files
-# Example:
-#     msg_dbg( "PROJECT_SOURCE_FILES = " ${PROJECT_SOURCE_FILES} )
-#     add_files_by_ext( PROJECT_SOURCE_FILES "${PROJECT_SOURCE_FILES}" ${PROJECT_SOURCE_DIR} "${CPP_EXTENTIONS}" )
-#     msg_dbg( "PROJECT_SOURCE_FILES = " ${PROJECT_SOURCE_FILES} )
-function( add_files_by_ext OUT_FILES IN_FILES IN_LOCATION IN_EXTENTIONS )
-   set( LOCAL_FILES "" )
-   find_files_by_ext( LOCAL_FILES ${IN_LOCATION} "${IN_EXTENTIONS}" )
-
-   list( APPEND IN_FILES ${LOCAL_FILES} )
-   set( ${OUT_FILES} ${IN_FILES} PARENT_SCOPE )
+   set( ${ARG_FILES} ${LOCAL_FILES} PARENT_SCOPE )
 endfunction( )

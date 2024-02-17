@@ -77,17 +77,24 @@ set( TEMPLATE_ADL_GEN_FILES
 #     XDL_FILE - (in) full path to xdl file
 #     GENERATED_FILES - (out) variable name that will be fullfilled by list of generated files
 # Example:
-#     generate_xdl( ${XDL_FILE} GEN_FILES )
+#     generate_xdl( XDL_FILE ${XDL_FILE} GENERATED_FILES GEN_FILES )
 #     msg_dbg( "GEN_FILES = " ${GEN_FILES} )
-function( generate_xdl XDL_FILE GENERATED_FILES )
-   get_filename_component( _FILE_NAME_ ${XDL_FILE} NAME )
+function( generate_xdl )
+   set( OPTIONS )
+   set( ONE_VALUE_ARGS XDL_FILE GENERATED_FILES )
+   set( MULTI_VALUE_ARGS )
+   cmake_parse_arguments( ARG "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN} )
+
+
+
+   get_filename_component( _FILE_NAME_ ${ARG_XDL_FILE} NAME )
    string( REGEX MATCH "^(.*)(\\.[^.]*)$" dummy ${_FILE_NAME_} )
    # *.xdl file name witout path and file extension
    set( XDL_FILE_NAME         ${CMAKE_MATCH_1} )
    # *.xdl file extension
    set( XDL_FILE_EXTENTION    ${CMAKE_MATCH_2} )
    # *.xdl location directory
-   get_filename_component( XDL_FILE_DIR ${XDL_FILE} DIRECTORY )
+   get_filename_component( XDL_FILE_DIR ${ARG_XDL_FILE} DIRECTORY )
    # *.xdl generated destination directory
    string( REPLACE "${PROJECT_SOURCE_DIR}" "${PROJECT_GEN_DIR}" XDL_GEN_DIR "${XDL_FILE_DIR}/${XDL_FILE_NAME}/" )
 
@@ -122,9 +129,9 @@ function( generate_xdl XDL_FILE GENERATED_FILES )
 
    set( XDL_GEN_FILES ${TEMPLATE_CPP_GEN_FILES} )
    list( TRANSFORM XDL_GEN_FILES PREPEND "${XDL_GEN_DIR}" )
-   set( ${GENERATED_FILES} ${XDL_GEN_FILES} PARENT_SCOPE )
+   set( ${ARG_GENERATED_FILES} ${XDL_GEN_FILES} PARENT_SCOPE )
 
-   msg_inf( "Generating C++ files from '" ${XDL_FILE} "':" )
+   msg_inf( "Generating C++ files from '" ${ARG_XDL_FILE} "':" )
    foreach( FILE ${XDL_GEN_FILES} )
       msg_vrb( "   " ${FILE} )
    endforeach( )
@@ -132,13 +139,12 @@ function( generate_xdl XDL_FILE GENERATED_FILES )
    add_custom_command(
          OUTPUT ${XDL_GEN_FILES}
          COMMENT "CODE GENERATION: ${XDL_GEN_FILES}"
-         DEPENDS ${XDL_FILE} ${TEMPLATE_ANTLR4_GEN_FILES}
          COMMAND ${CARPC_GENERATOR}
                --include=${PFW_DIR}
                --antlr_outdir=${ANTLR4_GEN_DIR}
-               --source=${XDL_FILE}
+               --source=${ARG_XDL_FILE}
                --gen_outdir=${XDL_GEN_DIR}
-         DEPENDS ${XDL_FILE} ${TEMPLATE_ANTLR4_GEN_FILES}
+         DEPENDS ${ARG_XDL_FILE} ${TEMPLATE_ANTLR4_GEN_FILES}
          VERBATIM
       )
 endfunction( )
@@ -149,15 +155,22 @@ endfunction( )
 #     GENERATED_FILES - (out) variable name that will be fullfilled by list of generated files
 #                       from all xdls
 # Example:
-#     generate_xdls( "${XDL_FILES}" GEN_FILES )
+#     generate_xdls( XDL_FILES "${XDL_FILES}" GENERATED_FILES GEN_FILES )
 #     msg_dbg( "GEN_FILES = " ${GEN_FILES} )
-function( generate_xdls XDL_FILES GENERATED_FILES )
+function( generate_xdls )
+   set( OPTIONS )
+   set( ONE_VALUE_ARGS GENERATED_FILES )
+   set( MULTI_VALUE_ARGS XDL_FILES )
+   cmake_parse_arguments( ARG "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN} )
+
+
+
    set( XDLS_GENERATED_FILES "" )
-   foreach( XDL_FILE ${XDL_FILES} )
-      generate_xdl( ${XDL_FILE} XDL_GENERATED_FILES )
+   foreach( XDL_FILE ${ARG_XDL_FILES} )
+      generate_xdl( XDL_FILE ${XDL_FILE} GENERATED_FILES XDL_GENERATED_FILES )
       list( APPEND XDLS_GENERATED_FILES ${XDL_GENERATED_FILES} )
    endforeach( )
-   set( ${GENERATED_FILES} ${XDLS_GENERATED_FILES} PARENT_SCOPE )
+   set( ${ARG_GENERATED_FILES} ${XDLS_GENERATED_FILES} PARENT_SCOPE )
 endfunction( )
 
 
@@ -173,18 +186,25 @@ set( TEMPLATE_GPB_GEN_FILES
 #     PROTO_FILE - (in) full path to proto file
 #     GENERATED_FILES - (out) variable name that will be fullfilled by list of generated files
 # Example:
-#     generate_gpb( ${PROTO_FILE} GEN_FILES )
+#     generate_gpb( PROTO_FILE ${PROTO_FILE} GENERATED_FILES GEN_FILES )
 #     msg_dbg( "GEN_FILES = " ${GEN_FILES} )
-function( generate_gpb PROTO_FILE GENERATED_FILES )
-   get_filename_component( _FILE_NAME_ ${PROTO_FILE} NAME )
+function( generate_gpb )
+   set( OPTIONS )
+   set( ONE_VALUE_ARGS PROTO_FILE GENERATED_FILES )
+   set( MULTI_VALUE_ARGS )
+   cmake_parse_arguments( ARG "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN} )
+
+
+
+   get_filename_component( _FILE_NAME_ ${ARG_PROTO_FILE} NAME )
    string( REGEX MATCH "^(.*)(\\.[^.]*)$" dummy ${_FILE_NAME_} )
-   # *.xdl file name witout path and file extension
+   # *.proto file name witout path and file extension
    set( PROTO_FILE_NAME       ${CMAKE_MATCH_1} )
-   # *.xdl file extension
+   # *.proto file extension
    set( PROTO_FILE_EXTENTION  ${CMAKE_MATCH_2} )
-   # *.xdl location directory
-   get_filename_component( PROTO_FILE_DIR ${PROTO_FILE} DIRECTORY )
-   # *.xdl generated destination directory
+   # *.proto location directory
+   get_filename_component( PROTO_FILE_DIR ${ARG_PROTO_FILE} DIRECTORY )
+   # *.proto generated destination directory
    string( REPLACE "${PROJECT_SOURCE_DIR}" "${PROJECT_GEN_DIR}" PROTO_GEN_DIR "${PROTO_FILE_DIR}/" )
 
    file( MAKE_DIRECTORY ${PROTO_GEN_DIR} )
@@ -192,13 +212,13 @@ function( generate_gpb PROTO_FILE GENERATED_FILES )
    set( PROTO_GEN_FILES ${TEMPLATE_GPB_GEN_FILES} )
    list( TRANSFORM PROTO_GEN_FILES PREPEND "${PROTO_FILE_NAME}" )
    list( TRANSFORM PROTO_GEN_FILES PREPEND "${PROTO_GEN_DIR}/" )
-   set( ${GENERATED_FILES} ${PROTO_GEN_FILES} PARENT_SCOPE )
+   set( ${ARG_GENERATED_FILES} ${PROTO_GEN_FILES} PARENT_SCOPE )
 
    add_custom_command(
          OUTPUT ${PROTO_GEN_FILES}
          COMMENT "GPB GENERATION: ${PROTO_GEN_FILES}"
-         COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} ${PROTO_FLAGS} -I${PROTO_FILE_DIR} --cpp_out=${PROTO_GEN_DIR} ${PROTO_FILE}
-         DEPENDS ${PROTO_FILE}
+         COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} ${PROTO_FLAGS} -I${PROTO_FILE_DIR} --cpp_out=${PROTO_GEN_DIR} ${ARG_PROTO_FILE}
+         DEPENDS ${ARG_PROTO_FILE}
          VERBATIM
       )
 endfunction( )
@@ -208,15 +228,22 @@ endfunction( )
 #     PROTO_FILES - (in) list of full pathes to proto files
 #     GENERATED_FILES - (out) variable name that will be fullfilled by list of generated files
 # Example:
-#     generate_gpbs( ${PROTO_FILES} GEN_FILES )
+#     generate_gpbs( PROTO_FILES ${PROTO_FILES} GENERATED_FILES GEN_FILES )
 #     msg_dbg( "GEN_FILES = " ${GEN_FILES} )
-function( generate_gpbs PROTO_FILES GENERATED_FILES )
+function( generate_gpbs )
+   set( OPTIONS )
+   set( ONE_VALUE_ARGS GENERATED_FILES )
+   set( MULTI_VALUE_ARGS PROTO_FILES )
+   cmake_parse_arguments( ARG "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN} )
+
+
+
    set( PROTOS_GENERATED_FILES "" )
-   foreach( PROTO_FILE ${PROTO_FILES} )
-      generate_gpb( ${PROTO_FILE} PROTO_GENERATED_FILES )
+   foreach( PROTO_FILE ${ARG_PROTO_FILES} )
+      generate_gpb( PROTO_FILE ${PROTO_FILE} GENERATED_FILES PROTO_GENERATED_FILES )
       list( APPEND PROTOS_GENERATED_FILES ${PROTO_GENERATED_FILES} )
    endforeach( )
-   set( ${GENERATED_FILES} ${PROTOS_GENERATED_FILES} PARENT_SCOPE )
+   set( ${ARG_GENERATED_FILES} ${PROTOS_GENERATED_FILES} PARENT_SCOPE )
 endfunction( )
 
 
@@ -232,29 +259,36 @@ set( TEMPLATE_PLANTUML_GEN_FILES
 #     PLANTUML_FILE - (in) full path to plantuml file
 #     GENERATED_FILES - (out) variable name that will be fullfilled by list of generated files
 # Example:
-#     generate_gpb( ${PLANTUML_FILE} GEN_FILES )
+#     generate_plantuml( PLANTUML_FILE ${PLANTUML_FILE} GENERATED_FILES GEN_FILES )
 #     msg_dbg( "GEN_FILES = " ${GEN_FILES} )
-function( generate_plantuml PLANTUML_FILE GENERATED_FILES )
-   get_filename_component( _FILE_NAME_ ${PLANTUML_FILE} NAME )
+function( generate_plantuml )
+   set( OPTIONS )
+   set( ONE_VALUE_ARGS PLANTUML_FILE GENERATED_FILES )
+   set( MULTI_VALUE_ARGS )
+   cmake_parse_arguments( ARG "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN} )
+
+
+
+   get_filename_component( _FILE_NAME_ ${ARG_PLANTUML_FILE} NAME )
    string( REGEX MATCH "^(.*)(\\.[^.]*)$" dummy ${_FILE_NAME_} )
    # *.plantuml file name witout path and file extension
    set( PLANTUML_FILE_NAME       ${CMAKE_MATCH_1} )
    # *.plantuml file extension
    set( PLANTUML_FILE_EXTENTION  ${CMAKE_MATCH_2} )
    # *.plantuml location directory
-   get_filename_component( PLANTUML_FILE_DIR ${PLANTUML_FILE} DIRECTORY )
+   get_filename_component( PLANTUML_FILE_DIR ${ARG_PLANTUML_FILE} DIRECTORY )
 
    string( REPLACE "${PROJECT_SOURCE_DIR}" "${PROJECT_GEN_DIR}" PLANTUML_GEN_DIR ${PLANTUML_FILE_DIR} )
    set( PLANTUML_GEN_FILES ${TEMPLATE_PLANTUML_GEN_FILES} )
    list( TRANSFORM PLANTUML_GEN_FILES PREPEND "${PLANTUML_FILE_NAME}" )
    list( TRANSFORM PLANTUML_GEN_FILES PREPEND "${PLANTUML_GEN_DIR}/" )
-   set( ${GENERATED_FILES} ${PLANTUML_GEN_FILES} PARENT_SCOPE )
+   set( ${ARG_GENERATED_FILES} ${PLANTUML_GEN_FILES} PARENT_SCOPE )
 
    add_custom_command(
          OUTPUT ${PLANTUML_GEN_FILES}
          COMMENT "PLANTUML GENERATION: ${PLANTUML_GEN_FILES}"
-         COMMAND java -jar ${PLANTUML_JAR} -tpng -progress -V -debugsvek -o ${PLANTUML_GEN_DIR} ${PLANTUML_FILE}
-         DEPENDS ${PLANTUML_FILE}
+         COMMAND java -jar ${PLANTUML_JAR} -tpng -progress -V -debugsvek -o ${PLANTUML_GEN_DIR} ${ARG_PLANTUML_FILE}
+         DEPENDS ${ARG_PLANTUML_FILE}
          VERBATIM
       )
 endfunction( )
@@ -264,15 +298,22 @@ endfunction( )
 #     PLANTUML_FILES - (in) list of full pathes to plantuml files
 #     GENERATED_FILES - (out) variable name that will be fullfilled by list of generated files
 # Example:
-#     generate_gpbs( ${PLANTUML_FILES} GEN_FILES )
+#     generate_gpbs( PLANTUML_FILES ${PLANTUML_FILES} GENERATED_FILES GEN_FILES )
 #     msg_dbg( "GEN_FILES = " ${GEN_FILES} )
-function( generate_plantumls PLANTUML_FILES GENERATED_FILES )
+function( generate_plantumls )
+   set( OPTIONS )
+   set( ONE_VALUE_ARGS GENERATED_FILES )
+   set( MULTI_VALUE_ARGS PLANTUML_FILES )
+   cmake_parse_arguments( ARG "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN} )
+
+
+
    set( PLANTUMLS_GENERATED_FILES "" )
-   foreach( PLANTUML_FILE ${PLANTUML_FILES} )
-      generate_plantuml( ${PLANTUML_FILE} PLANTUML_GENERATED_FILES )
+   foreach( PLANTUML_FILE ${ARG_PLANTUML_FILES} )
+      generate_plantuml( PLANTUML_FILE ${PLANTUML_FILE} GENERATED_FILES PLANTUML_GENERATED_FILES )
       list( APPEND PLANTUMLS_GENERATED_FILES ${PLANTUML_GENERATED_FILES} )
    endforeach( )
-   set( ${GENERATED_FILES} ${PLANTUMLS_GENERATED_FILES} PARENT_SCOPE )
+   set( ${ARG_GENERATED_FILES} ${PLANTUMLS_GENERATED_FILES} PARENT_SCOPE )
 endfunction( )
 
 # Generate graph file with dependancies between targets.
