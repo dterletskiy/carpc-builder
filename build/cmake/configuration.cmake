@@ -27,12 +27,12 @@ endif( )
 
 # antlr jar file
 if( NOT DEFINED ANTLR4_JAR )
-      set( ANTLR4_JAR ${FENIX_DIR}/thirdparty/antlr/antlr-4.10.1-complete.jar )
+   set( ANTLR4_JAR ${FENIX_DIR}/thirdparty/antlr/antlr-4.10.1-complete.jar )
 endif( )
 
 # plantuml jar file
 if( NOT DEFINED PLANTUML_JAR )
-      set( PLANTUML_JAR ${FENIX_DIR}/thirdparty/plantuml/plantuml-1.2021.14.jar )
+   set( PLANTUML_JAR ${FENIX_DIR}/thirdparty/plantuml/plantuml-1.2021.14.jar )
 endif( )
 
 # Target OS

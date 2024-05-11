@@ -149,6 +149,95 @@ function( generate_xdl )
       )
 endfunction( )
 
+add_custom_target(
+      ANTLR4_ADL ALL
+      COMMENT "ANTLR4 GENERATION: '${ADL_LEXER} ${ADL_PARSER}' -> '${TEMPLATE_ANTLR4_ADL_GEN_FILES}'"
+      COMMAND java -jar ${ANTLR4_JAR} -Dlanguage=Python3 -listener -visitor -o ${ANTLR4_GEN_DIR} ${ADL_LEXER} ${ADL_PARSER}
+      DEPENDS ${ADL_LEXER} ${ADL_PARSER}
+      VERBATIM
+   )
+
+add_custom_target(
+      ANTLR4_IDL ALL
+      COMMENT "ANTLR4 GENERATION: '${IDL_LEXER} ${IDL_PARSER}' -> '${TEMPLATE_ANTLR4_IDL_GEN_FILES}'"
+      COMMAND java -jar ${ANTLR4_JAR} -Dlanguage=Python3 -listener -visitor -o ${ANTLR4_GEN_DIR} ${IDL_LEXER} ${IDL_PARSER}
+      DEPENDS ${IDL_LEXER} ${IDL_PARSER}
+      VERBATIM
+   )
+
+add_custom_target(
+      ANTLR4_DDL ALL
+      COMMENT "ANTLR4 GENERATION: '${DDL_LEXER} ${DDL_PARSER}' -> '${TEMPLATE_ANTLR4_DDL_GEN_FILES}'"
+      COMMAND java -jar ${ANTLR4_JAR} -Dlanguage=Python3 -listener -visitor -o ${ANTLR4_GEN_DIR} ${DDL_LEXER} ${DDL_PARSER}
+      DEPENDS ${DDL_LEXER} ${DDL_PARSER}
+      VERBATIM
+   )
+
+# Function for generating C++ source code for server/client base stuff from xdl file
+# This function does the same as previous 'generate_xdl' but tries to avoid raise condition during
+# precessing xdl files in multiple threads.
+# Parameters:
+#     XDL_FILE - (in) full path to xdl file
+#     GENERATED_FILES - (out) variable name that will be fullfilled by list of generated files
+# Example:
+#     generate_xdl_ext( XDL_FILE ${XDL_FILE} GENERATED_FILES GEN_FILES )
+#     msg_dbg( "GEN_FILES = " ${GEN_FILES} )
+function( generate_xdl_ext )
+   set( OPTIONS )
+   set( ONE_VALUE_ARGS XDL_FILE GENERATED_FILES )
+   set( MULTI_VALUE_ARGS )
+   cmake_parse_arguments( ARG "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN} )
+
+
+
+   get_filename_component( _FILE_NAME_ ${ARG_XDL_FILE} NAME )
+   string( REGEX MATCH "^(.*)(\\.[^.]*)$" dummy ${_FILE_NAME_} )
+   # *.xdl file name witout path and file extension
+   set( XDL_FILE_NAME         ${CMAKE_MATCH_1} )
+   # *.xdl file extension
+   set( XDL_FILE_EXTENTION    ${CMAKE_MATCH_2} )
+   # *.xdl location directory
+   get_filename_component( XDL_FILE_DIR ${ARG_XDL_FILE} DIRECTORY )
+   # *.xdl generated destination directory
+   string( REPLACE "${PROJECT_SOURCE_DIR}" "${PROJECT_GEN_DIR}" XDL_GEN_DIR "${XDL_FILE_DIR}/${XDL_FILE_NAME}/" )
+
+   msg_inf( "processing xdl type: " ${XDL_FILE_EXTENTION} )
+
+   if( ".adl" STREQUAL ${XDL_FILE_EXTENTION} )
+      set( TEMPLATE_CPP_GEN_FILES         ${TEMPLATE_ADL_GEN_FILES}        )
+      set( ANTLR4_XDL                     ${ANTLR4_ADL}                    )
+   elseif( ".idl" STREQUAL ${XDL_FILE_EXTENTION} )
+      set( TEMPLATE_CPP_GEN_FILES         ${TEMPLATE_IDL_GEN_FILES}        )
+      set( ANTLR4_XDL                     ${ANTLR4_IDL}                    )
+   elseif( ".ddl" STREQUAL ${XDL_FILE_EXTENTION} )
+      set( TEMPLATE_CPP_GEN_FILES         ${TEMPLATE_DDL_GEN_FILES}        )
+      set( ANTLR4_XDL                     ${ANTLR4_DDL}                    )
+   else( )
+      msg_err( "undefined xdl type" )
+   endif( )
+
+   set( XDL_GEN_FILES ${TEMPLATE_CPP_GEN_FILES} )
+   list( TRANSFORM XDL_GEN_FILES PREPEND "${XDL_GEN_DIR}" )
+   set( ${ARG_GENERATED_FILES} ${XDL_GEN_FILES} PARENT_SCOPE )
+
+   msg_inf( "Generating C++ files from '" ${ARG_XDL_FILE} "':" )
+   foreach( FILE ${XDL_GEN_FILES} )
+      msg_vrb( "   " ${FILE} )
+   endforeach( )
+
+   add_custom_command(
+         OUTPUT ${XDL_GEN_FILES}
+         COMMENT "CODE GENERATION (DEPS: ${ANTLR4_XDL}): ${XDL_FILE} -> ${XDL_GEN_FILES}"
+         COMMAND ${CARPC_GENERATOR}
+               --include=${PFW_DIR}
+               --antlr_outdir=${ANTLR4_GEN_DIR}
+               --source=${ARG_XDL_FILE}
+               --gen_outdir=${XDL_GEN_DIR}
+         DEPENDS ${ANTLR4_XDL}
+         VERBATIM
+      )
+endfunction( )
+
 # Function for generating C++ source code for server/client base stuff from several xdl files
 # Parameters:
 #     XDL_FILES - (in) list of full pathes to xdl files
@@ -167,7 +256,7 @@ function( generate_xdls )
 
    set( XDLS_GENERATED_FILES "" )
    foreach( XDL_FILE ${ARG_XDL_FILES} )
-      generate_xdl( XDL_FILE ${XDL_FILE} GENERATED_FILES XDL_GENERATED_FILES )
+      generate_xdl_ext( XDL_FILE ${XDL_FILE} GENERATED_FILES XDL_GENERATED_FILES )
       list( APPEND XDLS_GENERATED_FILES ${XDL_GENERATED_FILES} )
    endforeach( )
    set( ${ARG_GENERATED_FILES} ${XDLS_GENERATED_FILES} PARENT_SCOPE )
