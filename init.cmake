@@ -10,14 +10,14 @@ set( FENIX_DIR "${CMAKE_SOURCE_DIR}/${FENIX_SUBDIR}" )
 
 
 
-include( ${FENIX_SUBDIR}/build/cmake/constants.cmake )
-include( ${FENIX_SUBDIR}/build/cmake/functions/message.cmake )
-include( ${FENIX_SUBDIR}/build/cmake/functions/base.cmake )
-include( ${FENIX_SUBDIR}/build/cmake/configuration.cmake )
-include( ${FENIX_SUBDIR}/build/cmake/compiler.cmake )
-include( ${FENIX_SUBDIR}/build/cmake/functions/helpers.cmake )
-include( ${FENIX_SUBDIR}/build/cmake/functions/generators.cmake )
-include( ${FENIX_SUBDIR}/build/cmake/functions/debug.cmake )
+include( ${FENIX_DIR}/build/cmake/constants.cmake )
+include( ${FENIX_DIR}/build/cmake/functions/message.cmake )
+include( ${FENIX_DIR}/build/cmake/functions/base.cmake )
+include( ${FENIX_DIR}/build/cmake/configuration.cmake )
+include( ${FENIX_DIR}/build/cmake/compiler.cmake )
+include( ${FENIX_DIR}/build/cmake/functions/helpers.cmake )
+include( ${FENIX_DIR}/build/cmake/functions/generators.cmake )
+include( ${FENIX_DIR}/build/cmake/functions/debug.cmake )
 
 
 
