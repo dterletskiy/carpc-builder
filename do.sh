@@ -14,30 +14,42 @@ source ${SHELL_FW}/drive.sh
 
 declare -A DEFAULT=(
       # '--compiler' parameter
+      # Defines compiler to be used to compile the project
       [COMPILER]="gnu"
       # '--os' parameter
+      # Target OS
       [OS]="linux"
       # '--sys_trace' option
+      # Enable/disable 'SYS_TRACE' macros
       [SYS_TRACE]="yes"
       # '--msg_trace' option
+      # Enable/disable 'MSG_TRACE' macros
       [MSG_TRACE]="yes"
       # '--colored_trace' option
+      # Enable/disable colored messages in console
       [COLORED_TRACE]="yes"
       # '--dlt' option
+      # Enable/disable DLT support
       [DLT]="yes"
       # '--gpb' option
+      # Enable/disable GPB support
       [GPB]="yes"
       # '--rtti' option
+      # Enable/disable RTTI support
       [RTTI]="yes"
       # '--memory_hook' option
       [MEMORY_HOOK]="no"
       # '--instrumental' option
       [INSTRUMENTAL]="no"
       # '--debug' option
+      # Enable/disable debug compilation option
       [DEBUG]="no"
       # '--debug_stream' option
+      # Enable/disable 'DEBUG_STREAM' compilation flag to activate/deactivate additional stream traces
       [DEBUG_STREAM]="no"
    )
+
+BUILD_JOBS=8
 
 
 
@@ -47,8 +59,15 @@ REPOS_DIR=${SOURCE_DIR}/repos/
 PRODUCT_DIR=${REPOS_DIR}/_product_/
 BUILD_DIR=${PRODUCT_DIR}/build/
 GEN_DIR=${PRODUCT_DIR}/gen/
-INSTALL_DIR=${PRODUCT_DIR}/deploy/
+# INSTALL_DIR=${PRODUCT_DIR}/deploy/
+INSTALL_DIR="${HOME}/.local/"
 DOC_DIR=${PRODUCT_DIR}/doc/
+
+CARPC_INSTALL_DIR=${INSTALL_DIR}
+CARPC_API_DIR=${CARPC_INSTALL_DIR}/include/carpc
+CARPC_LIB_DIR=${CARPC_INSTALL_DIR}/lib/carpc
+CARPC_BIN_DIR=${CARPC_INSTALL_DIR}/bin/carpc
+CARPC_ETC_DIR=${CARPC_INSTALL_DIR}/etc/carpc
 
 
 
@@ -249,12 +268,18 @@ function update_build_variables( )
    LOCAL_BUILD_VARIABLES+=" -D USE_RTTI:STRING=${CMD_RTTI}"
    LOCAL_BUILD_VARIABLES+=" -D CMAKE_C_COMPILER:STRING=${PROJECT_COMPILER["c"]}"
    LOCAL_BUILD_VARIABLES+=" -D CMAKE_CXX_COMPILER:STRING=${PROJECT_COMPILER["cxx"]}"
+   LOCAL_BUILD_VARIABLES+=" -D CMAKE_VERBOSE_MAKEFILE=TRUE"
+   # LOCAL_BUILD_VARIABLES+=" -D CMAKE_INCLUDE_PATH=${INSTALL_DIR}/include/carpc"
+   # LOCAL_BUILD_VARIABLES+=" -D CMAKE_LIBRARY_PATH=${INSTALL_DIR}/lib/carpc"
+   LOCAL_BUILD_VARIABLES+=" -D CARPC_API=${CARPC_API_DIR}"
+   LOCAL_BUILD_VARIABLES+=" -D CARPC_LIB=${CARPC_LIB_DIR}"
    echo ${LOCAL_BUILD_VARIABLES}
 }
 
 function config( )
 {
    BUILD_VARIABLES=$( update_build_variables )
+   print_info ${BUILD_VARIABLES}
 
    cmake \
       -S ${SOURCE_DIR} \
@@ -275,7 +300,7 @@ function build( )
       PARAMETER_TARGET="--target ${LOCAL_TARGET}"
    fi
 
-   cmake --build ${BUILD_DIR} -j8 ${PARAMETER_TARGET}
+   cmake --build ${BUILD_DIR} --verbose -j${BUILD_JOBS} ${PARAMETER_TARGET}
 }
 
 function install( )
@@ -527,7 +552,7 @@ function main( )
          pure
          config
          build
-         install
+         # install
       ;;
       run)
          run ${CMD_TARGET} "${CMD_OPTIONS}"
