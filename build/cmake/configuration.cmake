@@ -40,6 +40,16 @@ if( NOT DEFINED TARGET_OS )
    set( TARGET_OS "linux" )
 endif( )
 
+# Add path to installed CARPC api headers
+if( DEFINED CARPC_API )
+   include_directories( ${CARPC_API} )
+endif( )
+
+# Add path to installed CARPC libraries
+if( DEFINED CARPC_LIB )
+   link_directories( ${CARPC_LIB} )
+endif( )
+
 
 
 
