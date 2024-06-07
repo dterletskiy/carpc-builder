@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# clear; ./do.sh --source=/mnt/host/tda/release/carpc-framework --action=fetch --target=framework
+# clear; ./do.sh --source=/mnt/host/tda/release/carpc-framework --action=config
+# clear; ./do.sh --source=/mnt/host/tda/release/carpc-framework --action=build
+# clear; ./do.sh --source=/mnt/host/tda/release/carpc-framework --action=install
+
+
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 SHELL_FW=${SCRIPT_DIR}/submodules/dterletskiy/shell_fw/
@@ -53,21 +60,27 @@ BUILD_JOBS=8
 
 
 
-ROOT_DIR=${SCRIPT_DIR}
-SOURCE_DIR=${ROOT_DIR}/
-REPOS_DIR=${SOURCE_DIR}/repos/
-PRODUCT_DIR=${REPOS_DIR}/_product_/
-BUILD_DIR=${PRODUCT_DIR}/build/
-GEN_DIR=${PRODUCT_DIR}/gen/
-# INSTALL_DIR=${PRODUCT_DIR}/deploy/
-INSTALL_DIR="${HOME}/.local/"
-DOC_DIR=${PRODUCT_DIR}/doc/
+readonly BUILDER_DIR=${SCRIPT_DIR}
+declare -A DIRECTORIES=( )
 
-CARPC_INSTALL_DIR=${INSTALL_DIR}
+CARPC_INSTALL_DIR=${HOME}/.local/
 CARPC_API_DIR=${CARPC_INSTALL_DIR}/include/carpc
 CARPC_LIB_DIR=${CARPC_INSTALL_DIR}/lib/carpc
 CARPC_BIN_DIR=${CARPC_INSTALL_DIR}/bin/carpc
 CARPC_ETC_DIR=${CARPC_INSTALL_DIR}/etc/carpc
+
+function init_directories( )
+{
+   local LOCAL_SOURCE_DIR=${1}
+   local -n LOCAL_DIRECTORIES_REF=${2}
+
+   LOCAL_DIRECTORIES_REF[source]=${LOCAL_SOURCE_DIR}
+   LOCAL_DIRECTORIES_REF[product]=${LOCAL_SOURCE_DIR}/_product_/
+   LOCAL_DIRECTORIES_REF[build]=${LOCAL_DIRECTORIES_REF[product]}/build/
+   LOCAL_DIRECTORIES_REF[gen]=${LOCAL_DIRECTORIES_REF[product]}/gen/
+   LOCAL_DIRECTORIES_REF[deploy]=${LOCAL_DIRECTORIES_REF[product]}/deploy/
+   LOCAL_DIRECTORIES_REF[doc]=${LOCAL_DIRECTORIES_REF[product]}/doc/
+}
 
 
 
@@ -205,19 +218,23 @@ function fetch( )
    eval "init_repositories_${LOCAL_TARGET} REPOSITORIES"
    print_repositories REPOSITORIES
 
-   mkdir -p ${REPOS_DIR}
+   mkdir -p ${DIRECTORIES[source]}
 
-   REPOS_CMAKE_FILE="${REPOS_DIR}/CMakeLists.txt"
-   if [ -f ${REPOS_CMAKE_FILE} ]; then
+   SOURCE_CMAKE_FILE="${DIRECTORIES[source]}/CMakeLists.txt"
+   if [ -f ${SOURCE_CMAKE_FILE} ]; then
       print_error "Directory is not empty => repositories can't be cloned"
       exit 2
    fi
 
-   echo "cmake_minimum_required( VERSION 3.16 FATAL_ERROR )" > ${REPOS_CMAKE_FILE}
+   echo "cmake_minimum_required( VERSION 3.16 FATAL_ERROR )" > ${SOURCE_CMAKE_FILE}
    for REPOSITORY_NAME in "${REPOSITORIES[@]}"; do
       declare -n REPOSITORY=${REPOSITORY_NAME}
-      git clone --recursive -b ${REPOSITORY[branch]} ${REPOSITORY[url]} "${REPOS_DIR}/${REPOSITORY[directory]}"
-      echo "fenix_add_subdirectory( ${REPOSITORY[directory]} )" >> ${REPOS_CMAKE_FILE}
+      git clone \
+         --recursive \
+         -b ${REPOSITORY[branch]} \
+         ${REPOSITORY[url]} \
+         "${DIRECTORIES[source]}/${REPOSITORY[directory]}"
+      echo "fenix_add_subdirectory( ${REPOSITORY[directory]} )" >> ${SOURCE_CMAKE_FILE}
    done
 }
 
@@ -254,7 +271,7 @@ function update_build_variables( )
    define_compiler ${CMD_COMPILER} PROJECT_COMPILER
 
    LOCAL_BUILD_VARIABLES=""
-   LOCAL_BUILD_VARIABLES+=" -D ROOT_GEN_DIR:STRING=${GEN_DIR}"
+   LOCAL_BUILD_VARIABLES+=" -D ROOT_GEN_DIR:STRING=${DIRECTORIES[gen]}"
    LOCAL_BUILD_VARIABLES+=" -D TARGET_OS:STRING=${CMD_OS}"
    LOCAL_BUILD_VARIABLES+=" -D DLT_TRACE:STRING=${CMD_DLT}"
    LOCAL_BUILD_VARIABLES+=" -D SYS_TRACE:STRING=${CMD_SYS_TRACE}"
@@ -269,8 +286,7 @@ function update_build_variables( )
    LOCAL_BUILD_VARIABLES+=" -D CMAKE_C_COMPILER:STRING=${PROJECT_COMPILER["c"]}"
    LOCAL_BUILD_VARIABLES+=" -D CMAKE_CXX_COMPILER:STRING=${PROJECT_COMPILER["cxx"]}"
    LOCAL_BUILD_VARIABLES+=" -D CMAKE_VERBOSE_MAKEFILE=TRUE"
-   # LOCAL_BUILD_VARIABLES+=" -D CMAKE_INCLUDE_PATH=${INSTALL_DIR}/include/carpc"
-   # LOCAL_BUILD_VARIABLES+=" -D CMAKE_LIBRARY_PATH=${INSTALL_DIR}/lib/carpc"
+   LOCAL_BUILD_VARIABLES+=" -D SOURCE_DIR=${DIRECTORIES[source]}"
    LOCAL_BUILD_VARIABLES+=" -D CARPC_API=${CARPC_API_DIR}"
    LOCAL_BUILD_VARIABLES+=" -D CARPC_LIB=${CARPC_LIB_DIR}"
    echo ${LOCAL_BUILD_VARIABLES}
@@ -282,10 +298,10 @@ function config( )
    print_info ${BUILD_VARIABLES}
 
    cmake \
-      -S ${SOURCE_DIR} \
-      -B ${BUILD_DIR} \
-      --install-prefix ${INSTALL_DIR} \
-      --graphviz=${DOC_DIR}/graph/project \
+      -S ${BUILDER_DIR} \
+      -B ${DIRECTORIES[build]} \
+      --install-prefix ${DIRECTORIES[deploy]} \
+      --graphviz=${DIRECTORIES[doc]}/graph/project \
       ${BUILD_VARIABLES}
 }
 
@@ -300,7 +316,7 @@ function build( )
       PARAMETER_TARGET="--target ${LOCAL_TARGET}"
    fi
 
-   cmake --build ${BUILD_DIR} --verbose -j${BUILD_JOBS} ${PARAMETER_TARGET}
+   cmake --build ${DIRECTORIES[build]} --verbose -j${BUILD_JOBS} ${PARAMETER_TARGET}
 }
 
 function install( )
@@ -316,12 +332,12 @@ function clean( )
 function pure( )
 {
    rm -rf \
-      ${BUILD_DIR}/CMakeFiles \
-      ${BUILD_DIR}/CMakeCache.txt \
-      ${BUILD_DIR}/Makefile \
-      ${BUILD_DIR}/install_manifest.txt \
-      ${BUILD_DIR}/cmake_install.cmake
-   rm -fr ${PRODUCT_DIR}
+      ${DIRECTORIES[build]}/CMakeFiles \
+      ${DIRECTORIES[build]}/CMakeCache.txt \
+      ${DIRECTORIES[build]}/Makefile \
+      ${DIRECTORIES[build]}/install_manifest.txt \
+      ${DIRECTORIES[build]}/cmake_install.cmake
+   rm -fr ${DIRECTORIES[product]}
 }
 
 function run( )
@@ -330,8 +346,9 @@ function run( )
    shift
    LOCAL_OPTIONS=${@}
 
-   export LD_LIBRARY_PATH="${INSTALL_DIR}/lib/"
-   ${INSTALL_DIR}/bin/${LOCAL_TARGET} --config=${INSTALL_DIR}/etc/${LOCAL_TARGET}.cfg ${LOCAL_OPTIONS}
+   export LD_LIBRARY_PATH="${DIRECTORIES[deploy]}/lib/"
+   ${DIRECTORIES[deploy]}/bin/${LOCAL_TARGET} \
+      --config=${DIRECTORIES[deploy]}/etc/${LOCAL_TARGET}.cfg ${LOCAL_OPTIONS}
 }
 
 function validate_parameters( )
@@ -339,6 +356,21 @@ function validate_parameters( )
    if [ -z ${CMD_ACTION+x} ]; then
       print_error "'--action' is not set"
       exit 1
+   fi
+
+   if [ -z ${CMD_SOURCE_DIR+x} ]; then
+      print_warning "'--source' is not set => current directory '${PWD}' will be used"
+      CMD_SOURCE_DIR=${PWD}
+   elif [ -z ${CMD_SOURCE_DIR} ]; then
+      print_warning "'--source' is defined but empty => current directory '${PWD}' will be used"
+      CMD_SOURCE_DIR=${PWD}
+   else
+      if [[ "$(realpath "${CMD_SOURCE_DIR}")" == "${CMD_SOURCE_DIR}" ]]; then
+         print_warning "'--source' is defined as absolute path => '${CMD_SOURCE_DIR}' will be used"
+      else
+         print_warning "'--source' is defined as relative path => current path + '${CMD_SOURCE_DIR}' will be used"
+         CMD_SOURCE_DIR=${PWD}/${CMD_SOURCE_DIR}
+      fi
    fi
 
    if [ -z ${CMD_TARGET+x} ]; then
@@ -473,6 +505,16 @@ function parse_arguments( )
                exit 1
             fi
          ;;
+         --source=*)
+            if [ -z ${CMD_SOURCE_DIR+x} ]; then
+               CMD_SOURCE_DIR="${option#*=}"
+               shift # past argument=value
+               echo "CMD_SOURCE_DIR: ${CMD_SOURCE_DIR}"
+            else
+               print_error "'--source' is already set to '${CMD_SOURCE_DIR}'"
+               exit 1
+            fi
+         ;;
          --sys_trace)
             CMD_SYS_TRACE=
             echo "CMD_SYS_TRACE: defined"
@@ -529,6 +571,9 @@ function main( )
    parse_arguments "$@"
    print_info "Processing action:" ${CMD_ACTION}
 
+   init_directories ${CMD_SOURCE_DIR} DIRECTORIES
+   print_map DIRECTORIES
+
    case ${CMD_ACTION} in
       fetch)
          fetch ${CMD_TARGET}
@@ -566,5 +611,5 @@ function main( )
 
 
 
-cd ${ROOT_DIR}
+cd ${BUILDER_DIR}
 main "$@"
