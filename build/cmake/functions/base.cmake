@@ -79,7 +79,15 @@ endmacro( )
 
 # This function has the same functionality as default cmake 'add_subdirectory' function
 function( fenix_add_subdirectory IN_SUBDIR )
-   add_subdirectory( ${IN_SUBDIR} )
+
+   if( ARGC GREATER 1 )
+      set( IN_BIN_DIR "" )
+      list( GET ARGV 1 IN_BIN_DIR )
+      add_subdirectory( ${IN_SUBDIR} ${IN_BIN_DIR} )
+   else( )
+      add_subdirectory( ${IN_SUBDIR} )
+   endif( )
+
    fenix_current_gen_dir( )
    fenix_project_gen_dir( )
 endfunction( )
