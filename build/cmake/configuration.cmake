@@ -13,11 +13,11 @@ if( NOT DEFINED ROOT_GEN_DIR )
    set( ROOT_GEN_DIR ${ROOT_BINARY_DIR}/gen )
 endif( )
 
-# Root delivery directory
-if( NOT DEFINED ROOT_DELIVERY_DIR )
-   set( ROOT_DELIVERY_DIR ${CMAKE_INSTALL_PREFIX} )
+# Root deploy directory
+if( NOT DEFINED ROOT_DEPLOY_DIR )
+   set( ROOT_DEPLOY_DIR ${CMAKE_INSTALL_PREFIX} )
 else( )
-   set( CMAKE_INSTALL_PREFIX ${ROOT_DELIVERY_DIR} )
+   set( CMAKE_INSTALL_PREFIX ${ROOT_DEPLOY_DIR} )
 endif( )
 
 # Python FW directory

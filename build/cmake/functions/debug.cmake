@@ -99,7 +99,7 @@ function( print_variables )
    # [fenix]
    print_variable( ROOT_BINARY_DIR )
    # [fenix]
-   print_variable( ROOT_DELIVERY_DIR )
+   print_variable( ROOT_DEPLOY_DIR )
    # [fenix]
    print_variable( ROOT_GEN_DIR )
    # [fenix]
