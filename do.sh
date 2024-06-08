@@ -611,5 +611,4 @@ function main( )
 
 
 
-cd ${BUILDER_DIR}
 main "$@"
