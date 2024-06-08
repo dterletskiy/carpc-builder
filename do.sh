@@ -321,7 +321,17 @@ function build( )
 
 function install( )
 {
-   build "install"
+   local LOCAL_DESTINATION=${1}
+   if [ -z ${LOCAL_DESTINATION+x} ]; then
+      PARAMETER_DESTINATION=${DIRECTORIES[deploy]}
+   elif [ -z ${LOCAL_DESTINATION} ]; then
+      PARAMETER_DESTINATION=${DIRECTORIES[deploy]}
+   else
+      PARAMETER_DESTINATION="--prefix ${LOCAL_DESTINATION}"
+   fi
+   cmake --install ${DIRECTORIES[build]} ${PARAMETER_DESTINATION}
+
+   # build "install"
 }
 
 function clean( )
@@ -515,6 +525,16 @@ function parse_arguments( )
                exit 1
             fi
          ;;
+         --destination=*)
+            if [ -z ${CMD_DESTINATION_DIR+x} ]; then
+               CMD_DESTINATION_DIR="${option#*=}"
+               shift # past argument=value
+               echo "CMD_DESTINATION_DIR: ${CMD_DESTINATION_DIR}"
+            else
+               print_error "'--destination' is already set to '${CMD_DESTINATION_DIR}'"
+               exit 1
+            fi
+         ;;
          --sys_trace)
             CMD_SYS_TRACE=
             echo "CMD_SYS_TRACE: defined"
@@ -591,13 +611,13 @@ function main( )
          build ${CMD_TARGET}
       ;;
       install)
-         install
+         install ${CMD_DESTINATION_DIR}
       ;;
       world)
          pure
          config
          build
-         # install
+         # install ${CMD_DESTINATION_DIR}
       ;;
       run)
          run ${CMD_TARGET} "${CMD_OPTIONS}"
