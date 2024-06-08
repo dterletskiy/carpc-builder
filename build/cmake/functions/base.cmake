@@ -136,8 +136,8 @@ endmacro( )
 #        PROJECT - defines 'PROJECT_NAME' what will be used during the build. This argument is optional and
 #                  in case it is not defined 'PROJECT_NAME' variable value will be used.
 # Example:
-#     fenix_project( )
-#     fenix_project( PROJECT TRACING )
+#     fenix_project_gen_dir( )
+#     fenix_project_gen_dir( PROJECT TRACING )
 macro( fenix_project_gen_dir )
    set( OPTIONS )
    set( ONE_VALUE_ARGS PROJECT )

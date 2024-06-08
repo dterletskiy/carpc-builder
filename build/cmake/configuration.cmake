@@ -3,7 +3,7 @@
 set( CMAKE_VERBOSE_MAKEFILE on )
 
 # Root source directory
-set( ROOT_SOURCE_DIR ${CMAKE_SOURCE_DIR} )
+set( ROOT_SOURCE_DIR ${SOURCE_DIR} )
 
 # Root binary directory
 set( ROOT_BINARY_DIR ${CMAKE_BINARY_DIR} )
