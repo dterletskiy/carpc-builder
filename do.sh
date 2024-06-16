@@ -64,10 +64,11 @@ readonly BUILDER_DIR=${SCRIPT_DIR}
 declare -A DIRECTORIES=( )
 
 CARPC_INSTALL_DIR=${HOME}/.local/
-CARPC_API_DIR=${CARPC_INSTALL_DIR}/include/carpc
-CARPC_LIB_DIR=${CARPC_INSTALL_DIR}/lib/carpc
-CARPC_BIN_DIR=${CARPC_INSTALL_DIR}/bin/carpc
-CARPC_ETC_DIR=${CARPC_INSTALL_DIR}/etc/carpc
+CARPC_INSTALL_DIR=/mnt/host/tda/carpc/framework/_product_/deploy/
+CARPC_API_DIR=${CARPC_INSTALL_DIR}/include/
+CARPC_LIB_DIR=${CARPC_INSTALL_DIR}/lib/carpc/
+CARPC_BIN_DIR=${CARPC_INSTALL_DIR}/bin/carpc/
+CARPC_ETC_DIR=${CARPC_INSTALL_DIR}/etc/carpc/
 
 function init_directories( )
 {
@@ -323,9 +324,9 @@ function install( )
 {
    local LOCAL_DESTINATION=${1}
    if [ -z ${LOCAL_DESTINATION+x} ]; then
-      PARAMETER_DESTINATION=${DIRECTORIES[deploy]}
+      PARAMETER_DESTINATION="--prefix ${DIRECTORIES[deploy]}"
    elif [ -z ${LOCAL_DESTINATION} ]; then
-      PARAMETER_DESTINATION=${DIRECTORIES[deploy]}
+      PARAMETER_DESTINATION="--prefix ${DIRECTORIES[deploy]}"
    else
       PARAMETER_DESTINATION="--prefix ${LOCAL_DESTINATION}"
    fi
@@ -356,7 +357,7 @@ function run( )
    shift
    LOCAL_OPTIONS=${@}
 
-   export LD_LIBRARY_PATH="${DIRECTORIES[deploy]}/lib/"
+   export LD_LIBRARY_PATH="${DIRECTORIES[deploy]}/lib/;${CARPC_LIB_DIR}"
    ${DIRECTORIES[deploy]}/bin/${LOCAL_TARGET} \
       --config=${DIRECTORIES[deploy]}/etc/${LOCAL_TARGET}.cfg ${LOCAL_OPTIONS}
 }
@@ -617,7 +618,7 @@ function main( )
          pure
          config
          build
-         # install ${CMD_DESTINATION_DIR}
+         install ${CMD_DESTINATION_DIR}
       ;;
       run)
          run ${CMD_TARGET} "${CMD_OPTIONS}"
