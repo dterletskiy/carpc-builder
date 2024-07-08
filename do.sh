@@ -298,12 +298,16 @@ function config( )
    BUILD_VARIABLES=$( update_build_variables )
    print_info ${BUILD_VARIABLES}
 
-   cmake \
+   COMMAND=" \
+      cmake \
       -S ${BUILDER_DIR} \
       -B ${DIRECTORIES[build]} \
       --install-prefix ${DIRECTORIES[deploy]} \
       --graphviz=${DIRECTORIES[doc]}/graph/project \
-      ${BUILD_VARIABLES}
+      ${BUILD_VARIABLES} \
+   "
+   print_info ${COMMAND}
+   eval ${COMMAND}
 }
 
 function build( )
@@ -317,7 +321,9 @@ function build( )
       PARAMETER_TARGET="--target ${LOCAL_TARGET}"
    fi
 
-   cmake --build ${DIRECTORIES[build]} --verbose -j${BUILD_JOBS} ${PARAMETER_TARGET}
+   COMMAND="cmake --build ${DIRECTORIES[build]} --verbose -j${BUILD_JOBS} ${PARAMETER_TARGET}"
+   print_info ${COMMAND}
+   eval ${COMMAND}
 }
 
 function install( )
@@ -330,7 +336,10 @@ function install( )
    else
       PARAMETER_DESTINATION="--prefix ${LOCAL_DESTINATION}"
    fi
-   cmake --install ${DIRECTORIES[build]} ${PARAMETER_DESTINATION}
+
+   COMMAND="cmake --install ${DIRECTORIES[build]} ${PARAMETER_DESTINATION}"
+   print_info ${COMMAND}
+   eval ${COMMAND}
 
    # build "install"
 }
