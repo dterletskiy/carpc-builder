@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 
-# clear; ./do.sh --source=/mnt/host/tda/release/carpc-framework --action=fetch --target=framework
-# clear; ./do.sh --source=/mnt/host/tda/release/carpc-framework --action=config
-# clear; ./do.sh --source=/mnt/host/tda/release/carpc-framework --action=build
-# clear; ./do.sh --source=/mnt/host/tda/release/carpc-framework --action=install
+# CARPC_DIR=/mnt/host/tda/carpc/
+# clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/framework --action=fetch --target=framework
+# clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/examples --action=fetch --target=examples
+# clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/tutorial --action=fetch --target=tutorial
+# clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/framework --action=world --destination=${HOME}/.local/
+# clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/examples --action=world
+# clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/tutorial --action=world
+
 
 
 
