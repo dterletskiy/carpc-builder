@@ -198,6 +198,7 @@ class IdlListener( IdlParserListener ):
 
    def enterArguments_list( self, ctx: IdlParser.Arguments_listContext ):
       # pfw.console.debug.trace( "enterArguments_list" )
+      self.__arguments = [ ]
       pass
 
    def exitArguments_list( self, ctx: IdlParser.Arguments_listContext ):
@@ -207,7 +208,7 @@ class IdlListener( IdlParserListener ):
 
    def enterArguments( self, ctx: IdlParser.ArgumentsContext ):
       # pfw.console.debug.trace( "enterArguments" )
-      self.__arguments = [ ]
+      pass
 
    def exitArguments( self, ctx: IdlParser.ArgumentsContext ):
       # pfw.console.debug.trace( "exitArguments" )
