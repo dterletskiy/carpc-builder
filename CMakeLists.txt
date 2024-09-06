@@ -11,6 +11,8 @@ include( ${FENIX_SUBDIR}/init.cmake )
 
 fenix_project( TARGET fenix PROJECT FENIX )
 
+
+set( TARGET_PREFIX "carpc-" )
 fenix_add_subdirectory( ${SOURCE_DIR} build )
 
 fenix_get_all_targets( TARGETS )
