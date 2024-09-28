@@ -1,12 +1,53 @@
 #!/usr/bin/env bash
 
-# CARPC_DIR=/mnt/host/tda/carpc/
-# clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/framework --action=fetch --target=framework
-# clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/examples --action=fetch --target=examples
-# clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/tutorial --action=fetch --target=tutorial
-# clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/framework --action=world --destination=${HOME}/.local/
-# clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/examples --action=world
-# clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/tutorial --action=world
+function examples( )
+{
+   # CARPC_DIR=/mnt/host/tda/carpc/
+   # clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/framework --action=fetch --target=framework
+   # clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/examples --action=fetch --target=examples
+   # clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/tutorial --action=fetch --target=tutorial
+   # clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/framework --action=world --destination=${HOME}/.local/
+   # clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/examples --action=world
+   # clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/tutorial --action=world
+
+   ###########################################################################
+
+   CARPC_DIR=/mnt/host/tda/carpc/
+   CARPC_DEPLOY=${CARPC_DIR}/framework/_product_/deploy/
+   PERFORMANCE_DEPLOY=${CARPC_DIR}/performance/_product_/deploy/
+
+   LD_PRELOAD=${CARPC_DEPLOY}/lib/carpc/libcarpc-instrumental.so
+   LD_PRELOAD=liblttng-ust-cyg-profile-fast.so
+   LD_PRELOAD=liblttng-ust-cyg-profile.so
+
+   ###########################################################################
+
+   clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/framework --action=world
+   clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/framework --action=run --target=servicebrocker
+
+   export LD_LIBRARY_PATH=${CARPC_DEPLOY}/lib/;${CARPC_DEPLOY}/lib/carpc/
+   ${CARPC_DEPLOY}/bin/servicebrocker --config=${CARPC_DEPLOY}/etc/servicebrocker.cfg
+
+   ###########################################################################
+
+   clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/performance --action=world
+   clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/performance --action=run --target=server
+
+   export LD_LIBRARY_PATH=${PERFORMANCE_DEPLOY}/lib/;${CARPC_DEPLOY}/lib/carpc/
+   ${PERFORMANCE_DEPLOY}/bin/server --config=${PERFORMANCE_DEPLOY}/etc/server.cfg
+
+   ###########################################################################
+
+   clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/performance --action=world
+   clear; ${CARPC_DIR}/fenix/do.sh --source=${CARPC_DIR}/performance --action=run --target=client
+
+   export LD_LIBRARY_PATH=${PERFORMANCE_DEPLOY}/lib/;${CARPC_DEPLOY}/lib/carpc/libcarpc-instrumental.so
+   ${PERFORMANCE_DEPLOY}/bin/client --config=${PERFORMANCE_DEPLOY}/etc/client.cfg
+   valgrind --tool=callgrind ${PERFORMANCE_DEPLOY}/bin/client --config=${PERFORMANCE_DEPLOY}/etc/client.cfg
+   kcachegrind callgrind.out.12973
+
+   ###########################################################################
+}
 
 
 
