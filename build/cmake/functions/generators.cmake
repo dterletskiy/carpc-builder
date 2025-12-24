@@ -338,7 +338,8 @@ endfunction( )
 
 
 
-# TEMPLATE_PLANTUML_GEN_FILES - List of file extentions produced by generator for plantuml file
+# TEMPLATE_PLANTUML_GEN_FILES - List of file extentions
+# produced by generator for plantuml file
 set( TEMPLATE_PLANTUML_GEN_FILES
       .png
    )

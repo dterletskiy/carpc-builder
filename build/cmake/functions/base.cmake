@@ -41,8 +41,8 @@ endfunction( )
 
 
 
-# Function for searching all targets defined in all current directory and all
-# subdirectories.
+# Function for searching all targets defined in all current directory
+# and all subdirectories.
 # link: https://stackoverflow.com/a/62311397
 # Parameters:
 #     OUT_TARGETS - (out) list of targets
@@ -56,28 +56,43 @@ function( fenix_get_all_targets OUT_TARGETS )
    set( LOCAL_TARGETS )
    __fenix_all_targets_recursive__( LOCAL_TARGETS ${CMAKE_CURRENT_SOURCE_DIR} )
    set( ${OUT_TARGETS} ${LOCAL_TARGETS} PARENT_SCOPE )
-
-   msg_dbg( "List of targets:" )
-   foreach( LOCAL_TARGET IN LISTS LOCAL_TARGETS )
-      msg_inf( "   - " ${LOCAL_TARGET} )
-   endforeach( )
 endfunction( )
 
-# Helper macro for "fenix_get_all_targets" function
-macro( __fenix_all_targets_recursive__ OUT_TARGETS IN_DIR )
+# Helper function for "fenix_get_all_targets" function
+function( __fenix_all_targets_recursive__ OUT_TARGETS IN_DIR )
    get_property( SUBDIRS DIRECTORY ${IN_DIR} PROPERTY SUBDIRECTORIES )
-   foreach( SUBDIR ${SUBDIRS} )
-   __fenix_all_targets_recursive__( ${OUT_TARGETS} ${SUBDIR} )
+   foreach( SUBDIR IN LISTS SUBDIRS )
+      __fenix_all_targets_recursive__(${OUT_TARGETS} ${SUBDIR})
    endforeach( )
 
    get_property( CURRENT_TARGETS DIRECTORY ${IN_DIR} PROPERTY BUILDSYSTEM_TARGETS )
-   list( APPEND ${OUT_TARGETS} ${CURRENT_TARGETS} )
-endmacro( )
+   set( ${OUT_TARGETS} ${${OUT_TARGETS}} ${CURRENT_TARGETS} PARENT_SCOPE )
+endfunction( )
+
+
+
+# Function for filtering targets according to prefix
+function( fenix_filter_targets_by_prefix OUT_TARGETS IN_TARGETS PREFIX )
+   set( RESULT )
+
+   foreach( TGT IN LISTS IN_TARGETS )
+      if( TGT MATCHES "^${PREFIX}" )
+         list( APPEND RESULT ${TGT} )
+      endif( )
+   endforeach( )
+
+   set( ${OUT_TARGETS} ${RESULT} PARENT_SCOPE )
+endfunction( )
 
 
 
 
-# This function has the same functionality as default cmake 'add_subdirectory' function
+
+# This function has the same functionality as default
+# cmake 'add_subdirectory' function.
+# Additionally it just calles functions:
+#    - fenix_current_gen_dir
+#    - fenix_project_gen_dir
 function( fenix_add_subdirectory IN_SUBDIR )
 
    if( ARGC GREATER 1 )

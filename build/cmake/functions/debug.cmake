@@ -17,6 +17,19 @@ function( print_variable IN_VARIABLE )
    msg_vrb( "${IN_VARIABLE} = ${${IN_VARIABLE}}" )
 endfunction( )
 
+# Print list
+function ( print_list IN_LIST )
+   set( OPTIONS )
+   set( ONE_VALUE_ARGS MESSAGE )
+   set( MULTI_VALUE_ARGS )
+   cmake_parse_arguments( ARG "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN} )
+
+   msg_inf( "${ARG_MESSAGE}" )
+   foreach( ITEM IN LISTS IN_LIST )
+      msg_inf( "   - " ${ITEM} )
+   endforeach( )
+endfunction( )
+
 function( print_environment_variables )
    msg_dbg( "###########################################################################################" )
    msg_dbg( "#                                                                                         #" )
