@@ -43,7 +43,11 @@ endfunction( )
 # is not defined for thihs artifact type.
 function( fenix_add_deploy_targets )
    set( OPTIONS )
-   set( ONE_VALUE_ARGS NAME SUBDIR_ALL SUBDIR_TARGETS SUBDIR_INCLUDES SUBDIR_CONFIGS )
+   set( ONE_VALUE_ARGS
+         NAME
+         DEPENDS
+         SUBDIR_ALL SUBDIR_TARGETS SUBDIR_INCLUDES SUBDIR_CONFIGS
+      )
    set( MULTI_VALUE_ARGS TARGETS INCLUDES CONFIGS )
    cmake_parse_arguments( __LOCAL "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN} )
 
@@ -51,8 +55,8 @@ function( fenix_add_deploy_targets )
 
 
    add_custom_target( deploy_${__LOCAL_NAME}
-         DEPENDS ${PROJECT_TARGET_NAME}
-         COMMENT "Deploying '${PROJECT_TARGET_NAME}'"
+         DEPENDS ${__LOCAL_DEPENDS}
+         COMMENT "Deploying '${__LOCAL_DEPENDS}'"
       )
 
    foreach( __LOCAL_TARGET IN LISTS __LOCAL_TARGETS )
@@ -79,7 +83,7 @@ function( fenix_add_deploy_targets )
       endif( )
 
       add_custom_command(
-            TARGET deploy_${PROJECT_TARGET_NAME} POST_BUILD
+            TARGET deploy_${__LOCAL_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}
             COMMAND ${CMAKE_COMMAND} -E copy
                $<TARGET_FILE:${__LOCAL_TARGET}>
@@ -94,7 +98,7 @@ function( fenix_add_deploy_targets )
 
       if( IS_DIRECTORY "${__LOCAL_INCLUDE}" )
          add_custom_command(
-               TARGET deploy_${PROJECT_TARGET_NAME} POST_BUILD
+               TARGET deploy_${__LOCAL_NAME} POST_BUILD
                COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}
                COMMAND ${CMAKE_COMMAND} -E copy_directory 
                   ${__LOCAL_INCLUDE}
@@ -103,7 +107,7 @@ function( fenix_add_deploy_targets )
             )
       else( )
          add_custom_command(
-               TARGET deploy_${PROJECT_TARGET_NAME} POST_BUILD
+               TARGET deploy_${__LOCAL_NAME} POST_BUILD
                COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}
                COMMAND ${CMAKE_COMMAND} -E copy_directory 
                   ${__LOCAL_INCLUDE}
@@ -118,7 +122,7 @@ function( fenix_add_deploy_targets )
 
       if( IS_DIRECTORY "${__LOCAL_CONFIG}" )
          add_custom_command(
-               TARGET deploy_${PROJECT_TARGET_NAME} POST_BUILD
+               TARGET deploy_${__LOCAL_NAME} POST_BUILD
                COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}
                COMMAND ${CMAKE_COMMAND} -E copy_directory 
                   ${__LOCAL_CONFIG}
@@ -127,7 +131,7 @@ function( fenix_add_deploy_targets )
             )
       elseif( )
          add_custom_command(
-               TARGET deploy_${PROJECT_TARGET_NAME} POST_BUILD
+               TARGET deploy_${__LOCAL_NAME} POST_BUILD
                COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}
                COMMAND ${CMAKE_COMMAND} -E copy_directory 
                   ${__LOCAL_CONFIG}
