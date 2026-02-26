@@ -35,11 +35,6 @@ if( NOT DEFINED PLANTUML_JAR )
    set( PLANTUML_JAR ${FENIX_DIR}/thirdparty/plantuml/plantuml-1.2021.14.jar )
 endif( )
 
-# Target OS
-if( NOT DEFINED TARGET_OS )
-   set( TARGET_OS "linux" )
-endif( )
-
 # Add path to installed CARPC api headers
 if( DEFINED CARPC_API )
    include_directories( ${CARPC_API} )
@@ -53,72 +48,30 @@ endif( )
 
 
 
-# Enable framework system tracin
-fenix_is_on_off(
-      SYS_TRACE
-      SYS_TRACE
-      FENIX_POSITIVE_VALUE
-   )
-
-# Enable application tracing
-fenix_is_on_off(
-      MSG_TRACE
-      MSG_TRACE
-      FENIX_POSITIVE_VALUE
-   )
-
 # Enable colored tracing for console
 fenix_is_on_off(
-      COLORED_TRACE
-      COLORED_TRACE
+      CARPC_BUILD_TRACE_ENABLED
+      CARPC_BUILD_TRACE_ENABLED
       FENIX_POSITIVE_VALUE
-   )
-
-# Enable dlt tracing
-fenix_is_on_off(
-      DLT_TRACE
-      DLT_TRACE
-      FENIX_POSITIVE_VALUE
-   )
-
-# Enable dlt tracing
-fenix_is_on_off(
-      DEBUG_STREAM
-      DEBUG_STREAM
-      FENIX_NEGATIVE_VALUE
-   )
-
-# Enable memory allocator hooks
-fenix_is_on_off(
-      MEMORY_HOOK
-      MEMORY_HOOK
-      FENIX_NEGATIVE_VALUE
-   )
-
-# Enable instrumental functionality
-fenix_is_on_off(
-      INSTRUMENTAL
-      INSTRUMENTAL
-      FENIX_NEGATIVE_VALUE
    )
 
 # Enable debug information
 fenix_is_on_off(
-      USE_DEBUG
-      USE_DEBUG
+      CARPC_BUILD_DEBUG
+      CARPC_BUILD_DEBUG
       FENIX_NEGATIVE_VALUE
-   )
-
-# Enable goolgle protobuf
-fenix_is_on_off(
-      USE_GPB
-      USE_GPB
-      FENIX_POSITIVE_VALUE
    )
 
 # Enable RTTI
 fenix_is_on_off(
-      USE_RTTI
-      USE_RTTI
+      CARPC_BUILD_RTTI_ENABLED
+      CARPC_BUILD_RTTI_ENABLED
+      FENIX_POSITIVE_VALUE
+   )
+
+# Enable STD policy
+fenix_is_on_off(
+      CARPC_BUILD_POLICY_STD
+      CARPC_BUILD_POLICY_STD
       FENIX_POSITIVE_VALUE
    )

@@ -3,7 +3,7 @@
 #                                   Compile definitions                                   #
 #                                                                                         #
 ###########################################################################################
-set( CMAKE_CXX_STANDARD 17 )
+set( CMAKE_CXX_STANDARD 20 )
 set( CMAKE_CXX_STANDARD_REQUIRED True )
 
 # https://stackoverflow.com/questions/10046114/in-cmake-how-can-i-test-if-the-compiler-is-clang
@@ -36,58 +36,35 @@ elseif( CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" )
    msg_vrb( "compiler: Visual Studio C++" )
 endif( )
 
+if( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
+   add_compile_definitions( CARPC_BUILD_OS_LINUX )
+elseif( CMAKE_SYSTEM_NAME STREQUAL "QNX" )
+   add_compile_definitions( CARPC_BUILD_OS_QNX )
+elseif( CMAKE_SYSTEM_NAME STREQUAL "Generic" )
+   add_compile_definitions( CARPC_BUILD_OS_RTOS )
+endif( )
 
 
-if( INSTRUMENTAL )
+
+if( CARPC_BUILD_DEBUG )
    add_definitions( -O0 )
    add_definitions( -g )
-   add_definitions( -finstrument-functions )
+   add_compile_definitions( CARPC_BUILD_DEBUG )
 else( )
    add_definitions( -Ofast )
 endif( )
 
-if( USE_DEBUG OR INSTRUMENTAL )
-   add_definitions( -g )
-endif( )
-
-if( USE_RTTI )
+if( CARPC_BUILD_RTTI_ENABLED )
    add_definitions( -frtti )
+   add_compile_definitions( CARPC_BUILD_RTTI_ENABLED )
 else( )
    add_definitions( -fno-rtti )
 endif( )
 
-add_compile_definitions( OS_LINUX=0 )
-add_compile_definitions( OS_ANDROID=1 )
-if( ${TARGET_OS} STREQUAL "linux" )
-   add_compile_definitions( OS_TARGET=0 )
-elseif( ${TARGET_OS} STREQUAL "android" )
-   add_compile_definitions( OS_TARGET=1 )
-else( )
-   add_compile_definitions( OS_TARGET=0 )
+if( CARPC_BUILD_TRACE_ENABLED )
+   add_compile_definitions( CARPC_BUILD_TRACE_ENABLED )
 endif( )
 
-
-if( SYS_TRACE )
-   add_compile_definitions( SYS_TRACE )
-endif( )
-if( MSG_TRACE )
-   add_compile_definitions( MSG_TRACE )
-endif( )
-if( COLORED_TRACE )
-   add_compile_definitions( COLORED_TRACE )
-endif( )
-if( DLT_TRACE )
-   add_compile_definitions( USE_DLT )
-endif( )
-if( DEBUG_STREAM )
-   add_compile_definitions( DEBUG_STREAM )
-endif( )
-
-if( MEMORY_HOOK )
-   add_compile_definitions( USE_MEMORY_HOOK )
-endif( )
-
-if( USE_GPB )
-   find_package( Protobuf REQUIRED )
-   add_compile_definitions( USE_GPB )
+if( CARPC_BUILD_POLICY_STD )
+   add_compile_definitions( CARPC_BUILD_POLICY_STD )
 endif( )
